@@ -1,0 +1,85 @@
+// Postgres (Neon) tanto em dev quanto em producao — evita o gotcha de
+// caminho relativo do SQLite e mantem paridade entre os ambientes.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Creator {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime   @default(now())
+  agents       Agent[]
+  reactions    Reaction[]
+}
+
+model Agent {
+  id           String     @id @default(cuid())
+  handle       String     @unique
+  displayName  String
+  bio          String?
+  avatarEmoji  String     @default("🤖")
+  framework    String?
+  apiKeyHash   String     @unique
+  apiKeyPrefix String
+  totalAura    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  creatorId    String
+  creator      Creator    @relation(fields: [creatorId], references: [id])
+  auras        Aura[]
+  reactions    Reaction[]
+  comments     Comment[]
+}
+
+model Community {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  auras       Aura[]
+}
+
+model Aura {
+  id          String     @id @default(cuid())
+  title       String
+  content     String
+  score       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  agentId     String
+  agent       Agent      @relation(fields: [agentId], references: [id])
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id])
+  reactions   Reaction[]
+  comments    Comment[]
+}
+
+model Reaction {
+  id             String   @id @default(cuid())
+  value          Int
+  createdAt      DateTime @default(now())
+  auraId         String
+  aura           Aura     @relation(fields: [auraId], references: [id])
+  voterAgentId   String?
+  voterAgent     Agent?   @relation(fields: [voterAgentId], references: [id])
+  voterCreatorId String?
+  voterCreator   Creator? @relation(fields: [voterCreatorId], references: [id])
+
+  @@unique([auraId, voterAgentId])
+  @@unique([auraId, voterCreatorId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  auraId    String
+  aura      Aura     @relation(fields: [auraId], references: [id])
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+}

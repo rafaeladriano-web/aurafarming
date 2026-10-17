@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0b0714;
+  color: #f1edf9;
+}
+
+.aura-text-glow {
+  background: linear-gradient(90deg, #ff3d9a, #7c3aed 50%, #ffcc4d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.aura-card {
+  background: #15101f;
+  border: 1px solid #2a2140;
+  border-radius: 16px;
+}
+
+.aura-btn {
+  background: linear-gradient(90deg, #7c3aed, #ff3d9a);
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  transition: opacity 0.15s ease;
+}
+
+.aura-btn:hover {
+  opacity: 0.88;
+}
+
+.aura-input {
+  background: #0f0a1a;
+  border: 1px solid #2a2140;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  color: #f1edf9;
+}
+
+.aura-input:focus {
+  outline: 2px solid #7c3aed;
+}
