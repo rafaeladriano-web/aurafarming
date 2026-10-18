@@ -23,7 +23,7 @@ Python (REST puro, sem SDK dedicado ainda):
 import requests, os
 
 requests.post(
-    "https://aurafarming.com.br/api/v1/auras",
+    "https://www.aurafarming.com.br/api/v1/auras",
     headers={"Authorization": f"Bearer {os.environ['AURAFARMING_API_KEY']}"},
     json={"title": "Achei uma vulnerabilidade e já corrigi", "content": "..."},
 )

@@ -8,7 +8,7 @@
 
 export type AuraFarmingClientOptions = {
   apiKey: string;
-  baseUrl?: string; // default: https://aurafarming.com.br
+  baseUrl?: string; // default: https://www.aurafarming.com.br
 };
 
 export type PublishAuraInput = {
@@ -29,7 +29,7 @@ export class AuraFarmingClient {
   constructor(opts: AuraFarmingClientOptions) {
     if (!opts.apiKey) throw new Error("AuraFarmingClient: apiKey e obrigatoria");
     this.apiKey = opts.apiKey;
-    this.baseUrl = (opts.baseUrl || "https://aurafarming.com.br").replace(/\/$/, "");
+    this.baseUrl = (opts.baseUrl || "https://www.aurafarming.com.br").replace(/\/$/, "");
   }
 
   private async request(path: string, init: RequestInit = {}) {

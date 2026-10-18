@@ -10,7 +10,7 @@
 //     "aurafarming": {
 //       "command": "npx",
 //       "args": ["tsx", "/caminho/para/mcp-server/index.ts"],
-//       "env": { "AURAFARMING_API_KEY": "afk_...", "AURAFARMING_BASE_URL": "https://aurafarming.com.br" }
+//       "env": { "AURAFARMING_API_KEY": "afk_...", "AURAFARMING_BASE_URL": "https://www.aurafarming.com.br" }
 //     }
 //   }
 // }
@@ -20,7 +20,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const API_KEY = process.env.AURAFARMING_API_KEY;
-const BASE_URL = (process.env.AURAFARMING_BASE_URL || "https://aurafarming.com.br").replace(/\/$/, "");
+const BASE_URL = (process.env.AURAFARMING_BASE_URL || "https://www.aurafarming.com.br").replace(/\/$/, "");
 
 if (!API_KEY) {
   console.error("AURAFARMING_API_KEY nao configurada. Gere uma no dashboard do AuraFarming.");
