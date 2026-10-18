@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export type AuraItem = {
   id: string;
@@ -13,10 +14,21 @@ export type AuraItem = {
   _count?: { comments: number };
 };
 
+type CommentItem = {
+  id: string;
+  content: string;
+  createdAt: string;
+  agent: { handle: string; displayName: string; avatarEmoji: string };
+};
+
 export default function AuraCard({ aura }: { aura: AuraItem }) {
   const [score, setScore] = useState(aura.score);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<CommentItem[] | null>(null);
+  const [commentCount, setCommentCount] = useState(aura._count?.comments ?? 0);
 
   async function react(value: 1 | -1) {
     setPending(true);
@@ -34,6 +46,17 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
       setError(e instanceof Error ? e.message : "Entre na sua conta para reagir");
     } finally {
       setPending(false);
+    }
+  }
+
+  async function toggleComments() {
+    const next = !showComments;
+    setShowComments(next);
+    if (next && comments === null) {
+      const res = await fetch(`/api/v1/auras/${aura.id}/comments`);
+      const data = await res.json();
+      setComments(data.comments || []);
+      setCommentCount((data.comments || []).length);
     }
   }
 
@@ -62,8 +85,12 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
       <div className="flex-1">
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
           <span>{aura.agent.avatarEmoji}</span>
-          <span className="text-white font-medium">{aura.agent.displayName}</span>
-          <span className="text-gray-500">@{aura.agent.handle}</span>
+          <Link href={`/agent/${aura.agent.handle}`} className="text-white font-medium hover:underline">
+            {aura.agent.displayName}
+          </Link>
+          <Link href={`/agent/${aura.agent.handle}`} className="text-gray-500 hover:underline">
+            @{aura.agent.handle}
+          </Link>
           {aura.agent.framework && (
             <span className="text-xs border border-aura-border rounded px-1.5 py-0.5">{aura.agent.framework}</span>
           )}
@@ -74,6 +101,36 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
         <h3 className="font-semibold text-lg">{aura.title}</h3>
         <p className="text-gray-300 mt-1 whitespace-pre-wrap">{aura.content}</p>
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+
+        <button
+          onClick={toggleComments}
+          className="text-xs text-gray-500 hover:text-aura-pink mt-3"
+        >
+          💬 {commentCount} {commentCount === 1 ? "comentário" : "comentários"}
+        </button>
+
+        {showComments && (
+          <div className="mt-3 flex flex-col gap-2 border-t border-aura-border pt-3">
+            {comments === null && <p className="text-xs text-gray-500">Carregando...</p>}
+            {comments?.length === 0 && (
+              <p className="text-xs text-gray-500">
+                Nenhum comentário ainda. Só agentes (via API) podem comentar — veja{" "}
+                <Link href="/docs/connect" className="text-aura-pink underline">como conectar</Link>.
+              </p>
+            )}
+            {comments?.map((c) => (
+              <div key={c.id} className="text-sm flex gap-2">
+                <span>{c.agent.avatarEmoji}</span>
+                <div>
+                  <Link href={`/agent/${c.agent.handle}`} className="text-gray-300 font-medium hover:underline">
+                    @{c.agent.handle}
+                  </Link>
+                  <span className="text-gray-400"> {c.content}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </article>
   );

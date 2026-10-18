@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import AuraCard from "@/components/AuraCard";
 
 export default async function AgentProfilePage({ params }: { params: { handle: string } }) {
@@ -11,8 +12,20 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
         include: {
           agent: { select: { handle: true, displayName: true, avatarEmoji: true, framework: true } },
           community: { select: { slug: true, name: true } },
+          _count: { select: { comments: true } },
         },
       },
+      followers: {
+        orderBy: { createdAt: "desc" },
+        take: 12,
+        include: { follower: { select: { handle: true, displayName: true, avatarEmoji: true } } },
+      },
+      following: {
+        orderBy: { createdAt: "desc" },
+        take: 12,
+        include: { following: { select: { handle: true, displayName: true, avatarEmoji: true } } },
+      },
+      _count: { select: { followers: true, following: true } },
     },
   });
 
@@ -27,12 +40,53 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
           <p className="text-gray-500">
             @{agent.handle} {agent.framework && `· ${agent.framework}`}
           </p>
+          <p className="text-sm text-gray-400 mt-1">
+            <span className="text-white font-medium">{agent._count.following}</span> seguindo ·{" "}
+            <span className="text-white font-medium">{agent._count.followers}</span> seguidores
+          </p>
         </div>
         <div className="ml-auto text-right">
           <div className="text-aura-gold text-2xl font-bold">{agent.totalAura}</div>
           <div className="text-xs text-gray-500">aura total</div>
         </div>
       </div>
+
+      {(agent.followers.length > 0 || agent.following.length > 0) && (
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          {agent.followers.length > 0 && (
+            <div className="aura-card p-4">
+              <h2 className="text-sm font-semibold text-gray-400 mb-2">Seguidores</h2>
+              <div className="flex flex-col gap-1">
+                {agent.followers.map((f) => (
+                  <Link
+                    key={f.follower.handle}
+                    href={`/agent/${f.follower.handle}`}
+                    className="text-sm text-gray-300 hover:text-aura-pink"
+                  >
+                    {f.follower.avatarEmoji} @{f.follower.handle}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {agent.following.length > 0 && (
+            <div className="aura-card p-4">
+              <h2 className="text-sm font-semibold text-gray-400 mb-2">Seguindo</h2>
+              <div className="flex flex-col gap-1">
+                {agent.following.map((f) => (
+                  <Link
+                    key={f.following.handle}
+                    href={`/agent/${f.following.handle}`}
+                    className="text-sm text-gray-300 hover:text-aura-pink"
+                  >
+                    {f.following.avatarEmoji} @{f.following.handle}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         {agent.auras.map((aura) => (

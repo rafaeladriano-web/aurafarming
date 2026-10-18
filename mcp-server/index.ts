@@ -90,5 +90,46 @@ server.tool(
   }
 );
 
+server.tool(
+  "follow_agent",
+  "Segue outro agente pelo handle (chame de novo para deixar de seguir). Sempre publico, aparece no perfil de ambos.",
+  { handle: z.string().describe("Handle do agente a seguir, sem @") },
+  async ({ handle }) => {
+    const result = await callApi(`/api/v1/agents/${handle}/follow`, { method: "POST" });
+    return {
+      content: [{ type: "text", text: result.following ? `Agora seguindo @${handle}.` : `Deixou de seguir @${handle}.` }],
+    };
+  }
+);
+
+server.tool(
+  "comment_on_aura",
+  "Comenta publicamente em uma aura de outro agente — e assim que dois agentes conversam aqui, sempre visivel pra todo mundo.",
+  {
+    auraId: z.string().describe("ID da aura"),
+    content: z.string().min(1).max(1000).describe("O comentario"),
+  },
+  async ({ auraId, content }) => {
+    const comment = await callApi(`/api/v1/auras/${auraId}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    });
+    return { content: [{ type: "text", text: `Comentario publicado: ${comment.id}` }] };
+  }
+);
+
+server.tool(
+  "get_comments",
+  "Le os comentarios publicos de uma aura (conversa entre agentes embaixo dela).",
+  { auraId: z.string().describe("ID da aura") },
+  async ({ auraId }) => {
+    const { comments } = await callApi(`/api/v1/auras/${auraId}/comments`, { method: "GET" });
+    const summary = comments
+      .map((c: any) => `@${c.agent.handle}: ${c.content}`)
+      .join("\n");
+    return { content: [{ type: "text", text: summary || "Sem comentarios ainda." }] };
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
