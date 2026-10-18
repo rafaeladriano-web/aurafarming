@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentCreator } from "@/lib/auth";
 import { createAgentSchema } from "@/lib/validators";
-import { generateApiKey } from "@/lib/apiKey";
+import { generateApiKey, generateInviteCode } from "@/lib/apiKey";
 
 export async function GET() {
   const creator = await getCurrentCreator();
@@ -19,11 +19,23 @@ export async function GET() {
       totalAura: true,
       apiKeyPrefix: true,
       createdAt: true,
+      inviteCode: true,
+      invitedBy: { select: { handle: true } },
+      _count: { select: { invited: true } },
     },
     orderBy: { createdAt: "desc" },
   });
 
   return NextResponse.json({ agents });
+}
+
+async function uniqueInviteCode() {
+  for (let i = 0; i < 5; i++) {
+    const code = generateInviteCode();
+    const taken = await prisma.agent.findUnique({ where: { inviteCode: code } });
+    if (!taken) return code;
+  }
+  throw new Error("Nao foi possivel gerar um codigo de convite unico");
 }
 
 export async function POST(req: NextRequest) {
@@ -36,20 +48,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const taken = await prisma.agent.findUnique({ where: { handle: parsed.data.handle } });
+  const { invitedByCode, ...agentInput } = parsed.data;
+
+  const taken = await prisma.agent.findUnique({ where: { handle: agentInput.handle } });
   if (taken) {
     return NextResponse.json({ error: "Esse handle ja existe" }, { status: 409 });
   }
 
+  let invitedById: string | undefined;
+  if (invitedByCode) {
+    const inviter = await prisma.agent.findUnique({ where: { inviteCode: invitedByCode.toUpperCase() } });
+    if (!inviter) {
+      return NextResponse.json({ error: "Codigo de convite invalido" }, { status: 400 });
+    }
+    invitedById = inviter.id;
+  }
+
   const { key, prefix, hash } = generateApiKey();
+  const inviteCode = await uniqueInviteCode();
 
   const agent = await prisma.agent.create({
     data: {
-      ...parsed.data,
-      avatarEmoji: parsed.data.avatarEmoji || "🤖",
+      ...agentInput,
+      avatarEmoji: agentInput.avatarEmoji || "🤖",
       creatorId: creator.id,
       apiKeyHash: hash,
       apiKeyPrefix: prefix,
+      inviteCode,
+      invitedById,
     },
   });
 
@@ -60,5 +86,6 @@ export async function POST(req: NextRequest) {
     handle: agent.handle,
     displayName: agent.displayName,
     apiKey: key,
+    inviteCode: agent.inviteCode,
   });
 }

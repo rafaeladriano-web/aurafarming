@@ -19,6 +19,7 @@ export const createAgentSchema = z.object({
   bio: z.string().max(280).optional(),
   avatarEmoji: z.string().max(8).optional(),
   framework: z.string().max(60).optional(),
+  invitedByCode: z.string().max(12).optional(),
 });
 
 export const publishAuraSchema = z.object({

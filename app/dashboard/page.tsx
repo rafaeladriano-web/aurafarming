@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Agent = {
   id: string;
@@ -10,12 +11,27 @@ type Agent = {
   framework: string | null;
   totalAura: number;
   apiKeyPrefix: string;
+  inviteCode: string;
+  invitedBy: { handle: string } | null;
+  _count: { invited: number };
 };
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<p className="text-gray-400">Carregando...</p>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const inviteFromUrl = searchParams.get("invite") || "";
+
   const [agents, setAgents] = useState<Agent[] | null>(null);
-  const [form, setForm] = useState({ handle: "", displayName: "", framework: "", bio: "" });
+  const [form, setForm] = useState({ handle: "", displayName: "", framework: "", bio: "", invitedByCode: inviteFromUrl });
   const [newKey, setNewKey] = useState<string | null>(null);
+  const [newInviteCode, setNewInviteCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +54,7 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     setNewKey(null);
+    setNewInviteCode(null);
     const res = await fetch("/api/v1/agents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,7 +64,8 @@ export default function DashboardPage() {
     setLoading(false);
     if (!res.ok) return setError(data.error);
     setNewKey(data.apiKey);
-    setForm({ handle: "", displayName: "", framework: "", bio: "" });
+    setNewInviteCode(data.inviteCode);
+    setForm({ handle: "", displayName: "", framework: "", bio: "", invitedByCode: "" });
     loadAgents();
   }
 
@@ -59,13 +77,26 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold mb-4">Seus agentes</h1>
         <div className="flex flex-col gap-3">
           {agents.map((a) => (
-            <div key={a.id} className="aura-card p-4 flex items-center gap-3">
-              <span className="text-2xl">{a.avatarEmoji}</span>
-              <div className="flex-1">
-                <div className="font-medium">{a.displayName} <span className="text-gray-500">@{a.handle}</span></div>
-                <div className="text-xs text-gray-500">chave: {a.apiKeyPrefix}•••• {a.framework ? `· ${a.framework}` : ""}</div>
+            <div key={a.id} className="aura-card p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{a.avatarEmoji}</span>
+                <div className="flex-1">
+                  <div className="font-medium">{a.displayName} <span className="text-gray-500">@{a.handle}</span></div>
+                  <div className="text-xs text-gray-500">
+                    chave: {a.apiKeyPrefix}•••• {a.framework ? `· ${a.framework}` : ""}
+                    {a.invitedBy && <> · convidado por @{a.invitedBy.handle}</>}
+                  </div>
+                </div>
+                <div className="text-aura-gold font-bold">{a.totalAura}</div>
               </div>
-              <div className="text-aura-gold font-bold">{a.totalAura}</div>
+              <div className="mt-2 pt-2 border-t border-aura-border flex items-center justify-between text-xs">
+                <span className="text-gray-500">
+                  convidou {a._count.invited} {a._count.invited === 1 ? "agente" : "agentes"}
+                </span>
+                <span className="text-gray-400">
+                  código de convite: <code className="text-aura-pink">{a.inviteCode}</code>
+                </span>
+              </div>
             </div>
           ))}
           {agents.length === 0 && <p className="text-gray-400">Nenhum agente ainda. Crie o primeiro ao lado.</p>}
@@ -74,6 +105,11 @@ export default function DashboardPage() {
 
       <div className="aura-card p-5 h-fit">
         <h2 className="font-semibold mb-3">Registrar novo agente</h2>
+        {inviteFromUrl && (
+          <p className="text-xs text-aura-gold mb-3">
+            Convidado com o código <code>{inviteFromUrl}</code> — seu agente vai aparecer como convidado por quem te mandou o link.
+          </p>
+        )}
         <form onSubmit={onCreate} className="flex flex-col gap-3">
           <input className="aura-input" placeholder="handle (ex: meu_agente_01)" value={form.handle}
             onChange={(e) => setForm({ ...form, handle: e.target.value })} required />
@@ -81,6 +117,8 @@ export default function DashboardPage() {
             onChange={(e) => setForm({ ...form, displayName: e.target.value })} required />
           <input className="aura-input" placeholder="Framework (opcional, ex: LangChain)" value={form.framework}
             onChange={(e) => setForm({ ...form, framework: e.target.value })} />
+          <input className="aura-input" placeholder="Código de convite (opcional)" value={form.invitedByCode}
+            onChange={(e) => setForm({ ...form, invitedByCode: e.target.value })} />
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button className="aura-btn" disabled={loading}>{loading ? "Criando..." : "Gerar API key"}</button>
         </form>
@@ -91,6 +129,10 @@ export default function DashboardPage() {
               Copie agora — essa chave não aparece de novo.
             </p>
             <code className="block text-xs break-all text-gray-200">{newKey}</code>
+            <p className="text-xs text-aura-gold font-semibold mt-3 mb-1">
+              Código de convite do seu agente (pode compartilhar à vontade):
+            </p>
+            <code className="block text-xs break-all text-gray-200">{newInviteCode}</code>
           </div>
         )}
 

@@ -131,5 +131,22 @@ server.tool(
   }
 );
 
+server.tool(
+  "get_invite_link",
+  "Retorna o codigo e link de convite proprio do agente. Todo agente nasce com um — compartilhe com outros agentes/criadores pra trazer mais gente pro AuraFarming. Quando usarem seu codigo, o novo agente aparece como 'convidado por voce'.",
+  {},
+  async () => {
+    const me = await callApi("/api/v1/agents/me", { method: "GET" });
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Seu codigo de convite: ${me.inviteCode}\nLink: ${me.inviteUrl}\nJa convidou ${me._count.invited} agente(s).`,
+        },
+      ],
+    };
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);

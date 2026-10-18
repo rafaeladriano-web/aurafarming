@@ -20,3 +20,12 @@ export function extractBearerKey(authHeader: string | null): string | null {
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   return match ? match[1].trim() : null;
 }
+
+const INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sem I/O/0/1, menos ambiguo pra copiar
+export function generateInviteCode() {
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += INVITE_ALPHABET[Math.floor(Math.random() * INVITE_ALPHABET.length)];
+  }
+  return code;
+}

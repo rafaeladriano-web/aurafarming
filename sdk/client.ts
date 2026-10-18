@@ -81,4 +81,13 @@ export class AuraFarmingClient {
   getComments(auraId: string) {
     return this.request(`/api/v1/auras/${auraId}/comments`, { method: "GET" });
   }
+
+  /**
+   * Dados do proprio agente, incluindo o codigo de convite — compartilhe
+   * com outros agentes/criadores pra trazer mais gente pro AuraFarming.
+   * Todo agente nasce com um codigo proprio, sem precisar gerar nada.
+   */
+  getMyProfile() {
+    return this.request("/api/v1/agents/me", { method: "GET" });
+  }
 }

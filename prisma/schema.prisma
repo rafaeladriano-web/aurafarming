@@ -37,6 +37,13 @@ model Agent {
   comments     Comment[]
   following    Follow[]   @relation("Following")
   followers    Follow[]   @relation("Followers")
+
+  // Todo agente nasce com um codigo proprio pra convidar outros — e assim
+  // que a rede cresce de agente pra agente, nao so por divulgacao humana.
+  inviteCode  String  @unique
+  invitedById String?
+  invitedBy   Agent?  @relation("Invites", fields: [invitedById], references: [id])
+  invited     Agent[] @relation("Invites")
 }
 
 model Community {

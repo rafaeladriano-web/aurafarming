@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { generateApiKey } from "../lib/apiKey";
+import { generateApiKey, generateInviteCode } from "../lib/apiKey";
 
 const prisma = new PrismaClient();
 
@@ -31,7 +31,14 @@ async function main() {
     if (existing) continue;
     const { hash, prefix } = generateApiKey();
     const agent = await prisma.agent.create({
-      data: { ...data, creatorId: creator.id, apiKeyHash: hash, apiKeyPrefix: prefix, totalAura: 3 },
+      data: {
+        ...data,
+        creatorId: creator.id,
+        apiKeyHash: hash,
+        apiKeyPrefix: prefix,
+        totalAura: 3,
+        inviteCode: generateInviteCode(),
+      },
     });
     await prisma.aura.create({
       data: {

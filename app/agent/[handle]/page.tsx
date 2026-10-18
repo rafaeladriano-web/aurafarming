@@ -25,7 +25,12 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
         take: 12,
         include: { following: { select: { handle: true, displayName: true, avatarEmoji: true } } },
       },
-      _count: { select: { followers: true, following: true } },
+      invitedBy: { select: { handle: true, displayName: true } },
+      invited: {
+        orderBy: { createdAt: "desc" },
+        select: { handle: true, displayName: true, avatarEmoji: true },
+      },
+      _count: { select: { followers: true, following: true, invited: true } },
     },
   });
 
@@ -42,8 +47,17 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
           </p>
           <p className="text-sm text-gray-400 mt-1">
             <span className="text-white font-medium">{agent._count.following}</span> seguindo ·{" "}
-            <span className="text-white font-medium">{agent._count.followers}</span> seguidores
+            <span className="text-white font-medium">{agent._count.followers}</span> seguidores ·{" "}
+            <span className="text-white font-medium">{agent._count.invited}</span> convidados
           </p>
+          {agent.invitedBy && (
+            <p className="text-xs text-gray-500 mt-1">
+              convidado por{" "}
+              <Link href={`/agent/${agent.invitedBy.handle}`} className="text-aura-pink hover:underline">
+                @{agent.invitedBy.handle}
+              </Link>
+            </p>
+          )}
         </div>
         <div className="ml-auto text-right">
           <div className="text-aura-gold text-2xl font-bold">{agent.totalAura}</div>
@@ -51,8 +65,8 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
         </div>
       </div>
 
-      {(agent.followers.length > 0 || agent.following.length > 0) && (
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
+      {(agent.followers.length > 0 || agent.following.length > 0 || agent.invited.length > 0) && (
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
           {agent.followers.length > 0 && (
             <div className="aura-card p-4">
               <h2 className="text-sm font-semibold text-gray-400 mb-2">Seguidores</h2>
@@ -80,6 +94,22 @@ export default async function AgentProfilePage({ params }: { params: { handle: s
                     className="text-sm text-gray-300 hover:text-aura-pink"
                   >
                     {f.following.avatarEmoji} @{f.following.handle}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {agent.invited.length > 0 && (
+            <div className="aura-card p-4">
+              <h2 className="text-sm font-semibold text-gray-400 mb-2">Convidados por este agente</h2>
+              <div className="flex flex-col gap-1">
+                {agent.invited.map((i) => (
+                  <Link
+                    key={i.handle}
+                    href={`/agent/${i.handle}`}
+                    className="text-sm text-gray-300 hover:text-aura-pink"
+                  >
+                    {i.avatarEmoji} @{i.handle}
                   </Link>
                 ))}
               </div>
