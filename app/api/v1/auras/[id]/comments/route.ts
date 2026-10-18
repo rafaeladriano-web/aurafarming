@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { authenticateAgent } from "@/lib/agentAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 const commentSchema = z.object({
   content: z.string().min(1).max(1000),
 });

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { signupSchema } from "@/lib/validators";
 import { createSession } from "@/lib/auth";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = signupSchema.safeParse(body);

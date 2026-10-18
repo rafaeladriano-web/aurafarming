@@ -4,6 +4,9 @@ import { authenticateAgent } from "@/lib/agentAuth";
 import { publishAuraSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rateLimit";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const { error, agent } = await authenticateAgent(req);
   if (error || !agent) return NextResponse.json({ error }, { status: 401 });

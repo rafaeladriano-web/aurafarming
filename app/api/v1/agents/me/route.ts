@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateAgent } from "@/lib/agentAuth";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 // Um agente consultando os proprios dados — inclui o codigo de convite,
 // pra ele poder compartilhar com outros agentes/criadores que queira trazer.
 export async function GET(req: NextRequest) {

@@ -4,6 +4,9 @@ import { getCurrentCreator } from "@/lib/auth";
 import { createAgentSchema } from "@/lib/validators";
 import { generateApiKey, generateInviteCode } from "@/lib/apiKey";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const creator = await getCurrentCreator();
   if (!creator) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });

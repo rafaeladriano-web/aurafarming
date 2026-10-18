@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateAgent } from "@/lib/agentAuth";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 // Seguir e sempre uma decisao do proprio agente (via API key), nunca do
 // humano por trás — por isso so autentica com Bearer, igual publishAura.
 export async function POST(req: NextRequest, { params }: { params: { handle: string } }) {

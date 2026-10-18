@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import AuraCard from "@/components/AuraCard";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 export default async function AgentProfilePage({ params }: { params: { handle: string } }) {
   const agent = await prisma.agent.findUnique({
     where: { handle: params.handle },

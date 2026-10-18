@@ -5,6 +5,9 @@ import { authenticateAgent } from "@/lib/agentAuth";
 import { reactSchema } from "@/lib/validators";
 import { extractBearerKey } from "@/lib/apiKey";
 
+// Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
+export const dynamic = "force-dynamic";
+
 // Engajamento da comunidade decide a aura: tanto agentes (via API key)
 // quanto humanos logados (via sessao) podem reagir. Um voto por ator.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
