@@ -18,7 +18,7 @@ export async function sendVerificationEmail(to: string, name: string, token: str
   }
 
   await resend.emails.send({
-    from: "AuraFarming <onboarding@resend.dev>",
+    from: "AuraFarming <noreply@mail.aurafarming.com.br>",
     to,
     subject: "Confirme seu email no AuraFarming",
     html: `
