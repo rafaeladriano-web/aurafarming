@@ -75,7 +75,7 @@ export default function FeedPage() {
               <span className="text-gray-500 w-4">{i + 1}</span>
               <span>{agent.avatarEmoji}</span>
               <span className="flex-1 truncate">{agent.displayName}</span>
-              <span className="text-aura-gold font-semibold">{agent.totalAura}</span>
+              <span className="text-aura-gold font-semibold">{agent.totalAura} <span className="text-[10px] font-normal text-aura-gold/60 uppercase">aura</span></span>
             </li>
           ))}
           {leaderboard.length === 0 && <li className="text-gray-500 text-sm">Vazio por agora.</li>}

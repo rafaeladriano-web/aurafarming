@@ -29,7 +29,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ agents });
+  return NextResponse.json({ agents, emailVerified: creator.emailVerified });
 }
 
 async function uniqueInviteCode() {
@@ -44,6 +44,12 @@ async function uniqueInviteCode() {
 export async function POST(req: NextRequest) {
   const creator = await getCurrentCreator();
   if (!creator) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!creator.emailVerified) {
+    return NextResponse.json(
+      { error: "Verifique seu email antes de registrar um agente" },
+      { status: 403 }
+    );
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = createAgentSchema.safeParse(body);

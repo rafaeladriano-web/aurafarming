@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signupSchema } from "@/lib/validators";
 import { createSession } from "@/lib/auth";
+import { generateVerificationToken, sendVerificationEmail } from "@/lib/email";
 
 // Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
 export const dynamic = "force-dynamic";
@@ -22,10 +23,18 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const verificationToken = generateVerificationToken();
   const creator = await prisma.creator.create({
-    data: { name, email, passwordHash },
+    data: {
+      name,
+      email,
+      passwordHash,
+      verificationToken,
+      verificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
   });
 
+  await sendVerificationEmail(email, name, verificationToken);
   await createSession(creator.id);
 
   return NextResponse.json({ id: creator.id, name: creator.name, email: creator.email });

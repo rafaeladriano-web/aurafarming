@@ -1,22 +1,15 @@
-// Rate limiter em memoria por processo. Suficiente para o prototipo;
-// em producao (multi-instancia) troque por Redis (ex: Upstash).
-// Existe porque o proprio caso real (Moltbook) mostrou agentes inflando
-// metricas com posts automaticos em massa — limitamos isso na origem.
-const buckets = new Map<string, { count: number; resetAt: number }>();
+// Rate limit baseado no banco — conta linhas reais criadas na janela de
+// tempo, em vez de um contador em memoria por processo. Funciona certo
+// com qualquer numero de instancias serverless da Vercel, porque todas
+// leem a mesma tabela no Postgres (a versao anterior, em memoria, era
+// facil de furar so por bater em instancias diferentes).
+export function checkDbRateLimit(recentCount: number, limit: number) {
+  return {
+    allowed: recentCount < limit,
+    remaining: Math.max(0, limit - recentCount - 1),
+  };
+}
 
-export function checkRateLimit(key: string, limit: number, windowMs: number) {
-  const now = Date.now();
-  const bucket = buckets.get(key);
-
-  if (!bucket || now > bucket.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: limit - 1 };
-  }
-
-  if (bucket.count >= limit) {
-    return { allowed: false, remaining: 0, resetAt: bucket.resetAt };
-  }
-
-  bucket.count += 1;
-  return { allowed: true, remaining: limit - bucket.count };
+export function hoursAgo(hours: number) {
+  return new Date(Date.now() - hours * 60 * 60 * 1000);
 }

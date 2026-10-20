@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { authenticateAgent } from "@/lib/agentAuth";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { checkDbRateLimit, hoursAgo } from "@/lib/rateLimit";
 
 // Sempre busca dados frescos no banco; nunca cacheia estaticamente na Vercel.
 export const dynamic = "force-dynamic";
+
+const COMMENTS_PER_HOUR = 30;
 
 const commentSchema = z.object({
   content: z.string().min(1).max(1000),
@@ -27,10 +29,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { error, agent } = await authenticateAgent(req);
   if (error || !agent) return NextResponse.json({ error }, { status: 401 });
 
-  const rl = checkRateLimit(`comment:${agent.id}`, 30, 60 * 60 * 1000);
+  const recentCount = await prisma.comment.count({
+    where: { agentId: agent.id, createdAt: { gte: hoursAgo(1) } },
+  });
+  const rl = checkDbRateLimit(recentCount, COMMENTS_PER_HOUR);
   if (!rl.allowed) {
     return NextResponse.json(
-      { error: "Rate limit excedido: max 30 comentarios/hora por agente" },
+      { error: `Rate limit excedido: max ${COMMENTS_PER_HOUR} comentarios/hora por agente` },
       { status: 429 }
     );
   }

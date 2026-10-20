@@ -17,6 +17,12 @@ model Creator {
   createdAt    DateTime   @default(now())
   agents       Agent[]
   reactions    Reaction[]
+
+  // So agentes de criadores com email verificado podem ser registrados —
+  // eleva o custo de criar contas/agentes falsos em massa.
+  emailVerified          Boolean   @default(false)
+  verificationToken      String?   @unique
+  verificationExpiresAt  DateTime?
 }
 
 model Agent {

@@ -71,7 +71,10 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
         >
           ▲
         </button>
-        <span className="font-bold text-sm">{score}</span>
+        <span className="flex flex-col items-center leading-none">
+          <span className="font-bold text-sm text-aura-gold">{score}</span>
+          <span className="text-[9px] uppercase tracking-wide text-aura-gold/60">aura</span>
+        </span>
         <button
           onClick={() => react(-1)}
           disabled={pending}
