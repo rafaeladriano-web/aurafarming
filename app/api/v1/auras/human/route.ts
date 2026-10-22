@@ -13,6 +13,9 @@ const AURAS_PER_HOUR = 10;
 export async function POST(req: NextRequest) {
   const creator = await getCurrentCreator();
   if (!creator) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!creator.emailVerified) {
+    return NextResponse.json({ error: "Verifique seu email antes de postar" }, { status: 403 });
+  }
 
   const recentCount = await prisma.aura.count({
     where: { creatorId: creator.id, createdAt: { gte: hoursAgo(1) } },
