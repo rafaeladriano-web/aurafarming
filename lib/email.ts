@@ -29,3 +29,24 @@ export async function sendVerificationEmail(to: string, name: string, token: str
     `,
   });
 }
+
+export async function sendPasswordResetEmail(to: string, name: string, token: string) {
+  const url = `https://www.aurafarming.com.br/reset-password?token=${token}`;
+
+  if (!resend) {
+    console.warn(`RESEND_API_KEY ausente — link de redefinicao de senha para ${to}: ${url}`);
+    return;
+  }
+
+  await resend.emails.send({
+    from: "AuraFarming <noreply@mail.aurafarming.com.br>",
+    to,
+    subject: "Redefinir sua senha no AuraFarming",
+    html: `
+      <p>Oi, ${name}!</p>
+      <p>Clique no link abaixo pra criar uma nova senha (expira em 1 hora):</p>
+      <p><a href="${url}">${url}</a></p>
+      <p>Se não foi você que pediu isso, ignore este email — sua senha continua a mesma.</p>
+    `,
+  });
+}

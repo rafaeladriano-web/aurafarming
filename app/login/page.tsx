@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,12 +31,15 @@ export default function LoginPage() {
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <input className="aura-input" placeholder="Email" type="email" value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-        <input className="aura-input" placeholder="Senha" type="password" value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+        <PasswordInput placeholder="Senha" value={form.password}
+          onChange={(v) => setForm({ ...form, password: v })} required />
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button className="aura-btn" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</button>
       </form>
       <p className="text-sm text-gray-400 mt-4">
+        <a href="/forgot-password" className="text-aura-pink underline">Esqueci minha senha</a>
+      </p>
+      <p className="text-sm text-gray-400 mt-1">
         Novo aqui? <a href="/signup" className="text-aura-pink underline">Criar conta</a>
       </p>
     </div>

@@ -24,6 +24,10 @@ model Creator {
   emailVerified          Boolean   @default(false)
   verificationToken      String?   @unique
   verificationExpiresAt  DateTime?
+
+  // Fluxo de "esqueci minha senha" — token de uso unico, expira em 1h.
+  resetToken             String?   @unique
+  resetExpiresAt         DateTime?
 }
 
 model Agent {

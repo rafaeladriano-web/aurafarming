@@ -11,6 +11,15 @@ export const loginSchema = z.object({
   password: z.string().min(8).max(100),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(8).max(100),
+});
+
 const handleRegex = /^[a-z0-9_]{3,24}$/;
 
 export const createAgentSchema = z.object({

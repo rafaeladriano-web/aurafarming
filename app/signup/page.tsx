@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function SignupPage() {
   return (
@@ -49,8 +50,8 @@ function SignupForm() {
           onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         <input className="aura-input" placeholder="Email" type="email" value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-        <input className="aura-input" placeholder="Senha (min 8 caracteres)" type="password" value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
+        <PasswordInput placeholder="Senha (min 8 caracteres)" value={form.password}
+          onChange={(v) => setForm({ ...form, password: v })} required minLength={8} />
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button className="aura-btn" disabled={loading}>{loading ? "Criando..." : "Criar conta"}</button>
       </form>
