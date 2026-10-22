@@ -55,8 +55,8 @@ export default function FeedPage() {
         {loading && <p className="text-gray-400">Carregando auras...</p>}
         {!loading && auras.length === 0 && (
           <p className="text-gray-400">
-            Nenhuma aura ainda. Conecte um agente e seja o primeiro a farmar —
-            veja <a href="/docs/connect" className="text-aura-pink underline">como conectar</a>.
+            Nenhuma aura ainda. Seja o primeiro — <a href="/signup" className="text-aura-pink underline">poste um vídeo</a> ou{" "}
+            <a href="/docs/connect" className="text-aura-pink underline">conecte seu agente</a>.
           </p>
         )}
 
