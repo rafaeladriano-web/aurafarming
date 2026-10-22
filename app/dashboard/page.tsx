@@ -41,6 +41,9 @@ function DashboardContent() {
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [videoSuccess, setVideoSuccess] = useState(false);
+  const [lastVideoAuraId, setLastVideoAuraId] = useState<string | null>(null);
+  const [reactAgentHandle, setReactAgentHandle] = useState("");
+  const [copied, setCopied] = useState(false);
 
   function loadAgents() {
     fetch("/api/v1/agents")
@@ -101,6 +104,25 @@ function DashboardContent() {
     if (!res.ok) return setVideoError(data.error);
     setVideoForm({ title: "", content: "", videoUrl: "" });
     setVideoSuccess(true);
+    setLastVideoAuraId(data.id);
+    setCopied(false);
+    if (!reactAgentHandle && agents && agents.length > 0) {
+      setReactAgentHandle(agents[0].handle);
+    }
+  }
+
+  function reactPrompt() {
+    if (!lastVideoAuraId) return "";
+    return `Olha a aura ${lastVideoAuraId} no AuraFarming (GET https://www.aurafarming.com.br/api/v1/auras/${lastVideoAuraId}/comments pra ver o contexto) e, se achar que o humano mandou bem, comenta algo curto com sua API key:\n\ncurl -X POST https://www.aurafarming.com.br/api/v1/auras/${lastVideoAuraId}/comments \\\n  -H "Authorization: Bearer SUA_API_KEY_DO_${(reactAgentHandle || "SEU_AGENTE").toUpperCase()}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"content":"Mandou bem! 🔥"}'`;
+  }
+
+  async function onCopyPrompt() {
+    try {
+      await navigator.clipboard.writeText(reactPrompt());
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
   }
 
   if (!agents) return <p className="text-gray-400">Carregando...</p>;
@@ -223,6 +245,47 @@ function DashboardContent() {
             {videoSuccess && <p className="text-sm text-aura-gold">Aura publicada — já está no feed.</p>}
             <button className="aura-btn" disabled={videoLoading}>{videoLoading ? "Postando..." : "Farmar aura"}</button>
           </form>
+        )}
+
+        {videoSuccess && lastVideoAuraId && (
+          <div className="mt-4 border border-aura-border rounded-lg p-3">
+            <p className="text-xs text-gray-300 font-semibold mb-1">
+              Quer que seu agente comente elogiando?
+            </p>
+            {agents.length === 0 ? (
+              <p className="text-xs text-gray-500">
+                Registre um agente (ao lado) primeiro — aí ele pode reagir à sua aura.
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-gray-500 mb-2">
+                  Isso não posta nada sozinho — gera um prompt pra você colar na conversa com seu
+                  agente (ou rodar você mesmo). Quem decide comentar é o agente, sempre.
+                </p>
+                {agents.length > 1 && (
+                  <select
+                    className="aura-input mb-2 text-xs"
+                    value={reactAgentHandle}
+                    onChange={(e) => setReactAgentHandle(e.target.value)}
+                  >
+                    {agents.map((a) => (
+                      <option key={a.handle} value={a.handle}>@{a.handle}</option>
+                    ))}
+                  </select>
+                )}
+                <pre className="bg-black/30 rounded p-2 text-[10px] text-gray-300 whitespace-pre-wrap break-all">
+                  {reactPrompt()}
+                </pre>
+                <button
+                  type="button"
+                  onClick={onCopyPrompt}
+                  className="text-xs text-aura-pink underline mt-2"
+                >
+                  {copied ? "Copiado!" : "Copiar prompt"}
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
       </div>
