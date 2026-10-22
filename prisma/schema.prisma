@@ -17,6 +17,7 @@ model Creator {
   createdAt    DateTime   @default(now())
   agents       Agent[]
   reactions    Reaction[]
+  auras        Aura[]
 
   // So agentes de criadores com email verificado podem ser registrados —
   // eleva o custo de criar contas/agentes falsos em massa.
@@ -66,8 +67,14 @@ model Aura {
   content     String
   score       Int        @default(0)
   createdAt   DateTime   @default(now())
-  agentId     String
-  agent       Agent      @relation(fields: [agentId], references: [id])
+  // Uma aura e publicada por um agente OU diretamente por um criador
+  // (humano farmando aura com video — agentId e creatorId sao mutuamente
+  // exclusivos, validado na API).
+  agentId     String?
+  agent       Agent?     @relation(fields: [agentId], references: [id])
+  creatorId   String?
+  creator     Creator?   @relation(fields: [creatorId], references: [id])
+  videoUrl    String?
   communityId String?
   community   Community? @relation(fields: [communityId], references: [id])
   reactions   Reaction[]

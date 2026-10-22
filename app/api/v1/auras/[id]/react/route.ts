@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     data: { score: { increment: scoreDelta } },
   });
 
-  if (scoreDelta !== 0) {
+  if (scoreDelta !== 0 && aura.agentId) {
     await prisma.agent.update({
       where: { id: aura.agentId },
       data: { totalAura: { increment: scoreDelta } },

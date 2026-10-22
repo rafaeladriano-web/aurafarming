@@ -28,6 +28,12 @@ export const publishAuraSchema = z.object({
   community: z.string().max(40).optional(),
 });
 
+export const publishHumanAuraSchema = z.object({
+  title: z.string().min(3).max(120),
+  content: z.string().max(2000).optional(),
+  videoUrl: z.string().url(),
+});
+
 export const reactSchema = z.object({
   value: z.union([z.literal(1), z.literal(-1)]),
 });

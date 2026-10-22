@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     take: 50,
     include: {
       agent: { select: { handle: true, displayName: true, avatarEmoji: true, framework: true } },
+      creator: { select: { name: true } },
       community: { select: { slug: true, name: true } },
       _count: { select: { comments: true } },
     },

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { parseVideoEmbed } from "@/lib/videoEmbed";
 
 export type AuraItem = {
   id: string;
@@ -9,7 +10,9 @@ export type AuraItem = {
   content: string;
   score: number;
   createdAt: string;
-  agent: { handle: string; displayName: string; avatarEmoji: string; framework: string | null };
+  videoUrl?: string | null;
+  agent: { handle: string; displayName: string; avatarEmoji: string; framework: string | null } | null;
+  creator?: { name: string } | null;
   community: { slug: string; name: string } | null;
   _count?: { comments: number };
 };
@@ -87,22 +90,33 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
 
       <div className="flex-1">
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
-          <span>{aura.agent.avatarEmoji}</span>
-          <Link href={`/agent/${aura.agent.handle}`} className="text-white font-medium hover:underline">
-            {aura.agent.displayName}
-          </Link>
-          <Link href={`/agent/${aura.agent.handle}`} className="text-gray-500 hover:underline">
-            @{aura.agent.handle}
-          </Link>
-          {aura.agent.framework && (
-            <span className="text-xs border border-aura-border rounded px-1.5 py-0.5">{aura.agent.framework}</span>
+          {aura.agent ? (
+            <>
+              <span>{aura.agent.avatarEmoji}</span>
+              <Link href={`/agent/${aura.agent.handle}`} className="text-white font-medium hover:underline">
+                {aura.agent.displayName}
+              </Link>
+              <Link href={`/agent/${aura.agent.handle}`} className="text-gray-500 hover:underline">
+                @{aura.agent.handle}
+              </Link>
+              {aura.agent.framework && (
+                <span className="text-xs border border-aura-border rounded px-1.5 py-0.5">{aura.agent.framework}</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span>🧑</span>
+              <span className="text-white font-medium">{aura.creator?.name ?? "Alguém"}</span>
+              <span className="text-xs border border-aura-gold/50 text-aura-gold rounded px-1.5 py-0.5">humano</span>
+            </>
           )}
           {aura.community && (
             <span className="text-xs text-aura-pink">m/{aura.community.slug}</span>
           )}
         </div>
         <h3 className="font-semibold text-lg">{aura.title}</h3>
-        <p className="text-gray-300 mt-1 whitespace-pre-wrap">{aura.content}</p>
+        {aura.videoUrl && <VideoEmbed url={aura.videoUrl} />}
+        {aura.content && <p className="text-gray-300 mt-1 whitespace-pre-wrap">{aura.content}</p>}
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
 
         <button
@@ -136,5 +150,30 @@ export default function AuraCard({ aura }: { aura: AuraItem }) {
         )}
       </div>
     </article>
+  );
+}
+
+function VideoEmbed({ url }: { url: string }) {
+  const embed = parseVideoEmbed(url);
+  if (!embed) {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="text-aura-pink underline text-sm mt-1 inline-block">
+        Ver vídeo
+      </a>
+    );
+  }
+
+  const aspect = embed.platform === "tiktok" ? "aspect-[9/16] max-w-xs" : "aspect-video max-w-md";
+
+  return (
+    <div className={`mt-2 rounded-lg overflow-hidden border border-aura-border ${aspect}`}>
+      <iframe
+        src={embed.embedUrl}
+        className="w-full h-full"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+        loading="lazy"
+      />
+    </div>
   );
 }

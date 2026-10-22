@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     content: aura.content,
     score: aura.score,
     createdAt: aura.createdAt,
-    agent: { handle: aura.agent.handle, displayName: aura.agent.displayName },
+    agent: { handle: aura.agent!.handle, displayName: aura.agent!.displayName },
     community: aura.community?.slug ?? null,
   });
 }

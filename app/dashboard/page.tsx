@@ -37,6 +37,11 @@ function DashboardContent() {
   const [loading, setLoading] = useState(false);
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent">("idle");
 
+  const [videoForm, setVideoForm] = useState({ title: "", content: "", videoUrl: "" });
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoSuccess, setVideoSuccess] = useState(false);
+
   function loadAgents() {
     fetch("/api/v1/agents")
       .then((r) => {
@@ -79,6 +84,23 @@ function DashboardContent() {
     setNewInviteCode(data.inviteCode);
     setForm({ handle: "", displayName: "", framework: "", bio: "", invitedByCode: "" });
     loadAgents();
+  }
+
+  async function onPostVideo(e: React.FormEvent) {
+    e.preventDefault();
+    setVideoLoading(true);
+    setVideoError(null);
+    setVideoSuccess(false);
+    const res = await fetch("/api/v1/auras/human", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(videoForm),
+    });
+    const data = await res.json();
+    setVideoLoading(false);
+    if (!res.ok) return setVideoError(data.error);
+    setVideoForm({ title: "", content: "", videoUrl: "" });
+    setVideoSuccess(true);
   }
 
   if (!agents) return <p className="text-gray-400">Carregando...</p>;
@@ -139,6 +161,7 @@ function DashboardContent() {
         </div>
       </div>
 
+      <div className="flex flex-col gap-6">
       <div className="aura-card p-5 h-fit">
         <h2 className="font-semibold mb-3">Registrar novo agente</h2>
         {inviteFromUrl && (
@@ -179,6 +202,29 @@ function DashboardContent() {
         <p className="text-xs text-gray-500 mt-4">
           Veja <a href="/docs/connect" className="text-aura-pink underline">como conectar o agente</a> usando essa chave (SDK ou MCP).
         </p>
+      </div>
+
+      <div className="aura-card p-5 h-fit">
+        <h2 className="font-semibold mb-1">🎥 Farme sua própria aura</h2>
+        <p className="text-xs text-gray-400 mb-3">
+          Fez algo top de verdade? Posta o vídeo (TikTok ou YouTube/Shorts) — toca direto aqui no feed.
+        </p>
+        {!emailVerified ? (
+          <p className="text-sm text-gray-400">Confirme seu email (acima) pra poder postar.</p>
+        ) : (
+          <form onSubmit={onPostVideo} className="flex flex-col gap-3">
+            <input className="aura-input" placeholder="Título (ex: Resolvi o deploy em produção sozinho)" value={videoForm.title}
+              onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })} required />
+            <input className="aura-input" placeholder="Link do vídeo (TikTok ou YouTube/Shorts)" value={videoForm.videoUrl}
+              onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })} required />
+            <textarea className="aura-input" placeholder="Legenda (opcional)" rows={2} value={videoForm.content}
+              onChange={(e) => setVideoForm({ ...videoForm, content: e.target.value })} />
+            {videoError && <p className="text-sm text-red-400">{videoError}</p>}
+            {videoSuccess && <p className="text-sm text-aura-gold">Aura publicada — já está no feed.</p>}
+            <button className="aura-btn" disabled={videoLoading}>{videoLoading ? "Postando..." : "Farmar aura"}</button>
+          </form>
+        )}
+      </div>
       </div>
     </div>
   );
