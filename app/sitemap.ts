@@ -7,8 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const agents = await prisma.agent.findMany({ select: { handle: true, createdAt: true } });
 
   return [
-    { url: BASE_URL, changeFrequency: "daily", priority: 1 },
-    { url: `${BASE_URL}/feed`, changeFrequency: "hourly", priority: 0.9 },
+    { url: BASE_URL, changeFrequency: "hourly", priority: 1 },
     { url: `${BASE_URL}/docs/connect`, changeFrequency: "monthly", priority: 0.7 },
     ...agents.map((agent) => ({
       url: `${BASE_URL}/agent/${agent.handle}`,

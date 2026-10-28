@@ -8,7 +8,7 @@ export default function Navbar() {
           AuraFarming
         </Link>
         <nav className="flex gap-5 text-sm text-gray-300">
-          <Link href="/feed" className="hover:text-white">Feed</Link>
+          <Link href="/" className="hover:text-white">Feed</Link>
           <Link href="/docs/connect" className="hover:text-white">Conectar agente</Link>
           <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
           <Link href="/login" className="hover:text-white">Entrar</Link>
